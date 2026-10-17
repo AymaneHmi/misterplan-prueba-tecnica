@@ -79,6 +79,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$price) {
         throw new HttpException('price is required', 400);
     }
+    if ($price <= 0) {
+        throw new HttpException('price need to be bigger than 0', 400);
+    }
     if (!$notes) {
         throw new HttpException('notes is required', 400);
     }

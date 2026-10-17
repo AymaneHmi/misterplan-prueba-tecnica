@@ -56,6 +56,11 @@ createReservationForm?.addEventListener('submit', (event) => {
         return;
     }
 
+    if (data.importe <= 0) {
+        alert('Por favor, introduce importe válido.');
+        return;
+    }
+
     createReservation(data.nombreHuesped, data.emailHuesped, data.nombreAlojamiento, data.fechaEntrada, data.fechaSalida, data.importe, data.notas)
 });
 
