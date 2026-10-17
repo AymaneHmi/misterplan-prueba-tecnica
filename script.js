@@ -1,5 +1,5 @@
 
-const apiUrl = "http://127.0.0.1/preuba/api";
+const apiUrl = "http://127.0.0.1/.../api";
 
 const urlParams = new URLSearchParams(window.location.search);
 const reservaId = urlParams.get('reserva_id');
@@ -175,7 +175,6 @@ function fetchReservations() {
             document.getElementById('reservations_table').innerHTML = content;
         })
         .catch(error => {
-            console.log(error)
             reservationsStatusMessage.textContent = error.message;
             reservationsStatusMessage.classList.remove('hidden');
             reservationsStatusMessage.classList.add('error');

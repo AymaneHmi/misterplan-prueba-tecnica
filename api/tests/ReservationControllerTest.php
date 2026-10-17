@@ -17,7 +17,7 @@ class ReservationControllerTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->db = new mysqli('127.0.0.1', 'root', 'root', 'preuba');
+        $this->db = new mysqli('127.0.0.1', 'root', 'root', 'prueba');
 
         if ($this->db->connect_error) {
             $this->fail("Database connection failed: " . $this->db->connect_error);

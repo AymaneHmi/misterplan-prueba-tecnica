@@ -1,13 +1,14 @@
 
 Levantarlo en local:
 
-- Iniciar el MAMP, y crea una base de datos 'preuba', copiar env.example y cambiarle el nombre a .env y introduce el nombre de base de datos. dentro del phpMyAdmin, dentro de base de datos, tocar import, anadir archive, y poner .sql archivo, y tocar Go.
+- Iniciar el MAMP, y crea una base de datos 'prueba', copiar env.example y cambiarle el nombre a .env y introduce el nombre de base de datos. dentro del phpMyAdmin, dentro de base de datos, tocar import, anadir archive, y poner .sql archivo, y tocar Import.
 
-- Para ejecutar el proyecto de forma local, primero realiza un «pull» desde GitHub. 
+- Para ejecutar el proyecto de forma local, primero crea una carpeta dentro de htdocs in MAMP realiza un «pull» desde GitHub. 
 `git clone https://github.com/AymaneHmi/misterplan-prueba-tecnica.git`
 
 - Ejecuta `composer install` (si no tiene composer, installar aqui https://getcomposer.org/download/)
 
+- En script.js, escribe el api endpoint del proyecto "http://127.0.0.1/[nombre de carpeta]/api" por apiUrl;
 
 - Para ejecutar pruebas, utiliza este comando : `./vendor/bin/phpunit api/tests/ReservationControllerTest.php`
 

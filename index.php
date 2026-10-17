@@ -10,7 +10,6 @@ $reserva_id = $_GET['reserva_id'] ?? null;
 if($reserva_id) {
     echo $twig->render('reserva.html.twig');
 } else {
-
     echo $twig->render('reservas.html.twig');
 }
 
