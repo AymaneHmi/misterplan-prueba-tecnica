@@ -19,9 +19,7 @@ class ReservationController
         $stmt->bind_param("i", $reserva_id);
 
         if (!$stmt->execute()) {
-            http_response_code(500);
-            echo json_encode(array('error' => 'Database error'));
-            exit;
+            throw new HttpException('Error de base de datos', 500);
         }
 
         $result = $stmt->get_result();
@@ -66,6 +64,8 @@ class ReservationController
             $query .= " WHERE " . implode(" AND ", $conditions);
         }
 
+        $query .= " ORDER BY fecha_creacion DESC";
+
         $stmt = $this->db->prepare($query);
 
         if (count($params) > 0) {
@@ -73,9 +73,7 @@ class ReservationController
         }
 
         if (!$stmt->execute()) {
-            http_response_code(500);
-            echo json_encode(['error' => 'Could not fetch reservations']);
-            return;
+            throw new HttpException('No se pudieron obtener las reservas', 500);
         }
 
         $result = $stmt->get_result();
@@ -87,16 +85,13 @@ class ReservationController
 
         $stmt->close();
 
-        http_response_code(200);
-        echo json_encode(['reservations' => $reservations]);
+        Response::send(200, ['reservations' => $reservations]);
     }
 
     public function get_reservation(int $reserva_id)
     {
         if (!$this->is_reservation_found($reserva_id)) {
-            http_response_code(404);
-            echo json_encode(array('error' => 'Reservation not found'));
-            return;
+            throw new HttpException('Reserva no encontrada', 404);
         }
 
         $reserva_query = "SELECT * FROM reservas WHERE id = ?";
@@ -106,7 +101,7 @@ class ReservationController
         $reserva = $stmt->get_result()->fetch_assoc();
         $stmt->close();
 
-        $eventos_query = "SELECT * FROM reservas_evento WHERE reserva_id = ?";
+        $eventos_query = "SELECT * FROM reservas_evento WHERE reserva_id = ? ORDER BY fecha_creacion DESC";
         $stmt = $this->db->prepare($eventos_query);
         $stmt->bind_param("i", $reserva_id);
         $stmt->execute();
@@ -120,8 +115,7 @@ class ReservationController
 
         $stmt->close();
 
-        http_response_code(200);
-        echo json_encode([
+        Response::send(200, [
             'reserva' => $reserva,
             'eventos' => $eventos,
         ]);
@@ -136,7 +130,7 @@ class ReservationController
         $stmt->bind_param("iss", $reserva_id, $type, $description);
 
         if (!$stmt->execute()) {
-            throw new HttpException('Could not create reservation', 500);
+            throw new HttpException('No se pudo crear la reserva evento', 500);
         }
     }
 
@@ -153,18 +147,36 @@ class ReservationController
 
         if ($stmt->execute()) {
 
-            $this->create_reservation_event($stmt->insert_id, "crear", "una reserva esta creada");
+            $this->create_reservation_event($stmt->insert_id, "creacion", "Reserva creada por el usuario.");
 
-            http_response_code(201);
-            echo json_encode(array('success' => 'Reservation created', 'id' => $stmt->insert_id));
+            Response::send(201, ['success' => 'Reserva creada', 'id' => $stmt->insert_id]);
         } else {
-            throw new HttpException('Could not create reservation', 500);
+            throw new HttpException('No se pudo crear la reserva', 500);
         }
         $stmt->close();
     }
 
-    public function update_reservation($reserva_id, $state)
+    public function update_reservation($reserva_id, $estado)
     {
+
+        if (!$this->is_reservation_found($reserva_id)) {
+            throw new HttpException('Reserva no encontrada', 404);
+        }
+
+        $query = "UPDATE reservas SET estado=? WHERE id=?";
+        $stmt = $this->db->prepare($query);
+
+        $stmt->bind_param("si", $estado, $reserva_id);
+
+        if ($stmt->execute()) {
+
+            $this->create_reservation_event($reserva_id, $estado, "la reserva esta {$estado}");
+
+            Response::send(201, ['success' => 'Reserva actualizada']);
+        } else {
+            throw new HttpException('No se pudo crear la reserva evento', 500);
+        }
+        $stmt->close();
 
     }
 

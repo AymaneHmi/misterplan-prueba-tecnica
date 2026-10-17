@@ -5,24 +5,21 @@
 
 <h1>Reservas</h1>
 
-<div id="loading-indicator" class="hidden">cargando reservas..</div>
-<div id="error-indicator" class="hidden">error cargando reservas..</div>
-
 <button id="createReservationBtn">Crear una reserva</button>
 
-<!-- Form layout with modular wrappers -->
 <form method="post" id="createReservationForm" class="hidden">
+
     <div>
         <label>Nombre Huesped</label>
-        <input type="text" name="nombreHuesped" required>
+        <input type="text" name="nombreHuesped" required placeholder="Nombre Huésped">
     </div>
     <div>
         <label>Email Huesped</label>
-        <input type="email" name="emailHuesped" required>
+        <input type="email" name="emailHuesped" required placeholder="Email Huésped">
     </div>
     <div>
         <label>Nombre alojamiento</label>
-        <input type="text" name="nombreAlojamiento" required>
+        <input type="text" name="nombreAlojamiento" required placeholder="Nombre Alojamiento">
     </div>
     <div>
         <label>Fecha entrada</label>
@@ -34,28 +31,30 @@
     </div>
     <div>
         <label>Importe</label>
-        <input type="number" name="importe" required>
+        <input type="number" name="importe" required placeholder="Importe">
     </div>
     <div>
         <label>Notas</label>
-        <input type="text" name="notas">
+        <input type="text" name="notas" placeholder="Notas">
     </div>
 
     <div class="form-actions">
         <button type="button" id="cancelReservationFormBtn">cancelar</button>
         <button type="submit" id="createReservationFromBtn">Crear</button>
     </div>
+
+    <div id="formStatusMessage" class="status-message hidden"></div>
+
 </form>
 
-<!-- Filter view section wrapped neatly -->
 <div class="filter-panel">
     <div class="filter-group">
         <label for="stateFilter">Estado:</label>
         <select id="stateFilter">
             <option value=""></option>
-            <option value="pendiente">pendiente</option>
-            <option value="confirmada">confirmada</option>
-            <option value="cancelada">cancelada</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="confirmada">Confirmada</option>
+            <option value="cancelada">Cancelada</option>
         </select>
     </div>
     
@@ -71,11 +70,12 @@
     
     <div class="filter-group">
         <label for="guestNameFilter">Huésped:</label>
-        <input type="text" id="guestNameFilter">
+        <input type="text" id="guestNameFilter" placeholder="Nombre Huésped">
     </div>
     
     <button id="filterBtn">Filtrar</button>
 </div>
+
 
 <!-- Table viewport architecture for mobile responsiveness -->
 <div class="table-container">
@@ -100,6 +100,6 @@
     </table>
 </div>
 
-<div id="empty-indicator" class="hidden">no reservas..</div>
+<div id="reservationsStatusMessage" class="status-message hidden"></div>
 
 {% endblock %}

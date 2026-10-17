@@ -7,7 +7,7 @@ $helper = new InputDataHelper();
 $controller = new ReservationController($conn);
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
+    Response::send(200, []);
     exit;
 }
 
@@ -105,6 +105,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'PATCH' || $_SERVER['REQUEST_METHOD'] === 'PUT') {
+
+    $json = file_get_contents('php://input');
+    $inputData = json_decode($json, true) ?? [];
+
+    $reserva_id = $helper->sanitizeInput($inputData['reserva_id'] ?? '');
+    $estado = $helper->sanitizeInput($inputData['estado'] ?? '');
+
+    $estados = ["pendiente", "confirmada", "cancelada"];
+
+    if (!$reserva_id) {
+        throw new HttpException('reserva id is required', 400);
+    }
+
+    if (!$estado) {
+        throw new HttpException('estado id is required', 400);
+    }
+    
+    if (!in_array($estado, $estados, true)) {
+        throw new HttpException('estado correcta is required', 400);
+    }
+
+    $controller->update_reservation($reserva_id, $estado);
+
+    exit;
 
 }
 

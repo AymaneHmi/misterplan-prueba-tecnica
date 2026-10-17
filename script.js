@@ -4,13 +4,17 @@ const apiUrl = "http://127.0.0.1/preuba/api";
 const urlParams = new URLSearchParams(window.location.search);
 const reservaId = urlParams.get('reserva_id');
 
-const loadingEl = document.getElementById('loading-indicator');
-const errorEl = document.getElementById('error-indicator');
-const emptyEl = document.getElementById('empty-indicator');
+const reservationsStatusMessage = document.getElementById('reservationsStatusMessage');
+
+const reservationStatusMessage = document.getElementById('reservationStatusMessage');
+
+const formStatusMessage = document.getElementById('formStatusMessage');
 
 const createReservationBtn = document.getElementById('createReservationBtn');
 const createReservationForm = document.getElementById('createReservationForm');
 const cancelReservationFormBtn = document.getElementById('cancelReservationFormBtn');
+
+const cancelReseravtionBtn = document.getElementById('cancelReseravtionBtn');
 
 const fechaEntrada = document.getElementById('fechaEntrada');
 const fechaSalida = document.getElementById('fechaSalida');
@@ -39,6 +43,16 @@ createReservationForm?.addEventListener('submit', (event) => {
 
     if (!emailRegex.test(data.emailHuesped)) {
         alert('Por favor, introduce un correo electrónico válido.');
+        return;
+    }
+
+    if (new Date(data.fechaEntrada).getTime() < new Date().getTime()) {
+        alert('Por favor, introduce un valido dia.');
+        return;
+    }
+
+    if (new Date(data.fechaEntrada).getTime() > new Date(data.fechaSalida).getTime()) {
+        alert('Por favor, introduce un valido rango.');
         return;
     }
 
@@ -94,28 +108,22 @@ function clearCreateReservationForm() {
     createReservationForm.reset();
 }
 
+function formatDate(date) {
+    return new Intl.DateTimeFormat('es-SP', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    }).format(new Date(date));
+}
+
 function renderReservationsRows(reservations) {
     let content = '';
     reservations.forEach(reservation => {
 
-        const fecha_entrada = new Intl.DateTimeFormat('es-SP', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        }).format(new Date(reservation.fecha_entrada));
-        const fecha_salida = new Intl.DateTimeFormat('es-SP', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        }).format(new Date(reservation.fecha_salida));
-        const fecha_creacion = new Intl.DateTimeFormat('es-SP', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        }).format(new Date(reservation.fecha_creacion));
+        const fecha_entrada = formatDate(reservation.fecha_entrada)
+        const fecha_salida = formatDate(reservation.fecha_salida)
+        const fecha_creacion = formatDate(reservation.fecha_creacion)
 
         content += `<tr>
                 <td>${reservation.id}</td>
@@ -125,12 +133,12 @@ function renderReservationsRows(reservations) {
                 <td>${fecha_entrada}</td>
                 <td>${fecha_salida}</td>
                 <td>${reservation.estado}</td>
-                <td>$${reservation.importe}</td>
+                <td>€${reservation.importe}</td>
                 <td>${reservation.notas}</td>
                 <td>${fecha_creacion}</td>
                 <td>
                     <a href="?reserva_id=${reservation.id}"><button>Ver</button></a>
-                    <button onclick="cancelReservation(${reservation.id})">Cancelar</button>
+                    <button id="cancelReseravtionBtn" onclick="cancelReservation(${reservation.id})">Cancelar</button>
                 </td>
             </tr>`;
     });
@@ -141,92 +149,43 @@ function renderReservationsRows(reservations) {
 function fetchReservations() {
     const url = `${apiUrl}/reservations`;
 
-    loadingEl?.classList?.remove('hidden');
-    emptyEl.classList.add('hidden')
+    reservationsStatusMessage.textContent = 'cargando reservas..';
+    reservationsStatusMessage.classList.remove('hidden');
 
     fetch(url)
         .then(response => {
             if (!response.ok) {
-                errorEl?.classList?.remove('hidden');
-                throw new Error(`HTTP error! Status: ${response.status}`);
+                return response.json().then(errData => {
+                    throw new Error(errData.error || `HTTP error! Status: ${response.status}`);
+                });
             }
             return response.json();
         })
         .then(data => {
-            loadingEl?.classList?.add('hidden');
             const reservations = data.reservations;
 
             if (reservations.length === 0) {
-                emptyEl.classList.remove('hidden')
+                reservationsStatusMessage.textContent = 'no reservas..';
+                reservationsStatusMessage.classList.remove('hidden');
+            } else {
+                reservationsStatusMessage.classList.add('hidden');
             }
+
             const content = renderReservationsRows(reservations);
             document.getElementById('reservations_table').innerHTML = content;
         })
         .catch(error => {
-            errorEl?.classList?.remove('hidden');
+            console.log(error)
+            reservationsStatusMessage.textContent = error.message;
+            reservationsStatusMessage.classList.remove('hidden');
+            reservationsStatusMessage.classList.add('error');
         })
         .finally(() => {
-            loadingEl?.classList?.add('hidden');
-        });
-}
-
-function fetchReservation(reservaId) {
-    const url = `${apiUrl}/reservations?reserva_id=${reservaId}`;
-
-    loadingEl?.classList?.remove('hidden');
-
-    fetch(url)
-        .then(response => {
-            if (!response.ok) {
-                errorEl?.classList?.remove('hidden');
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            errorEl?.classList?.add('hidden');
-            const reserva = data.reserva;
-            const eventos = data.eventos;
-
-            let eventosContent = '';
-
-            eventos.forEach(evento => {
-                eventosContent += `
-                <div>
-                    ${evento.descripcion} ${evento.fecha_creacion} ${evento.tipo}
-                </div>
-                `;
-            })
-
-            document.getElementById('reserva_detalle_content').innerHTML = `
-            <h3>id : ${reserva.id} </h3>
-            <h3>nombre_huesped : ${reserva.nombre_huesped} </h3>
-            <h3>email_huesped : ${reserva.email_huesped} </h3>
-            <h3>nombre_alojamiento : ${reserva.nombre_alojamiento} </h3>
-            <h3>fecha_entrada : ${reserva.fecha_entrada} </h3>
-            <h3>fecha_salida : ${reserva.fecha_salida} </h3>
-            <h3>estado : ${reserva.estado} </h3>
-            <h3>importe : ${reserva.importe} </h3>
-            <h3>notas : ${reserva.notas} </h3>
-            <h3>fecha_creacion : ${reserva.fecha_creacion} </h3>
-
-            <h2>historial de evento</h2>
-
-            ${eventosContent}
-
-            `;
-        })
-        .catch(error => {
-            errorEl?.classList?.remove('hidden');
-        })
-        .finally(() => {
-            loadingEl?.classList?.add('hidden');
         });
 }
 
 
 function filterReservations(state, startDate, endDate, guestName) {
-
 
     const payload = {
         state: state,
@@ -239,31 +198,108 @@ function filterReservations(state, startDate, endDate, guestName) {
 
     const url = `${apiUrl}/reservations?${queryString}`;
 
-    loadingEl?.classList?.remove('hidden');
-    emptyEl.classList.add('hidden')
+    reservationsStatusMessage.textContent = 'cargando reservas..';
+    reservationsStatusMessage.classList.remove('hidden');
 
     fetch(url)
         .then(response => {
             if (!response.ok) {
-                errorEl?.classList?.remove('hidden');
-                throw new Error(`HTTP error! Status: ${response.status}`);
+                return response.json().then(errData => {
+                    throw new Error(errData.error || `HTTP error! Status: ${response.status}`);
+                });
             }
             return response.json();
         })
         .then(data => {
-            loadingEl?.classList?.add('hidden');
             const reservations = data.reservations;
             if (reservations.length === 0) {
-                emptyEl.classList.remove('hidden')
+                reservationsStatusMessage.textContent = 'no reservas..';
+                reservationsStatusMessage.classList.remove('hidden');
+            } else {
+                reservationsStatusMessage.classList.add('hidden');
             }
+
             const content = renderReservationsRows(reservations);
             document.getElementById('reservations_table').innerHTML = content;
         })
         .catch(error => {
-            errorEl?.classList?.remove('hidden');
+            reservationsStatusMessage.textContent = error.message;
+            reservationsStatusMessage.classList.remove('hidden');
+            reservationsStatusMessage.classList.add('error');
         })
         .finally(() => {
-            loadingEl?.classList?.add('hidden');
+        });
+}
+
+function fetchReservation(reservaId) {
+    const url = `${apiUrl}/reservations?reserva_id=${reservaId}`;
+
+    reservationStatusMessage.textContent = "Cargando Reserva.."
+    reservationStatusMessage.classList.remove('hidden');
+
+    fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(errData => {
+                    throw new Error(errData.error || `HTTP error! Status: ${response.status}`);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            const reserva = data.reserva;
+            const eventos = data.eventos;
+
+            reservationStatusMessage.classList.add('hidden');
+
+            let eventosContent = '';
+
+            eventos.forEach(evento => {
+                const fecha_creacion = formatDate(evento.fecha_creacion)
+
+                eventosContent += `
+                <div class="timeline-item">
+                    Reserva <strong>${evento.tipo}</strong>: ${evento.descripcion} 
+                    <span style="display:block; font-size:0.75rem; color:#888;">${fecha_creacion}</span>
+                </div>
+                `;
+            })
+
+            const fecha_entrada = formatDate(reserva.fecha_entrada)
+            const fecha_salida = formatDate(reserva.fecha_salida)
+            const fecha_creacion = formatDate(reserva.fecha_creacion)
+
+            document.getElementById('reserva_detalle_content').innerHTML = `
+
+                ${reserva.estado !== "cancelada" ? `<button id="cancelReseravtionBtn" onclick="cancelReservation(${reserva.id})">Cancelar</button>` : ""}
+
+                <div class="detail-grid" style="margin-top: 1.5rem;">
+                    <h3>ID: <strong>${reserva.id}</strong></h3>
+                    <h3>Huésped: <strong>${reserva.nombre_huesped}</strong></h3>
+                    <h3>Email: <strong>${reserva.email_huesped}</strong></h3>
+                    <h3>Alojamiento: <strong>${reserva.nombre_alojamiento}</strong></h3>
+                    <h3>Entrada: <strong>${fecha_entrada}</strong></h3>
+                    <h3>Salida: <strong>${fecha_salida}</strong></h3>
+                    <h3>Estado: <strong>${reserva.estado}</strong></h3>
+                    <h3>Importe: <strong>€${reserva.importe}</strong></h3>
+                    <h3>Notas: <strong>${reserva.notas || '—'}</strong></h3>
+                    <h3>Creado el: <strong>${fecha_creacion}</strong></h3>
+                </div>
+
+                <h2>Historial de eventos</h2>
+
+                <div class="timeline-list">
+                    ${eventosContent || '<p style="color:#666; font-size:0.85rem;">No hay eventos registrados.</p>'}
+                </div>
+
+            `;
+        })
+        .catch(error => {
+            reservationStatusMessage.textContent = error.message
+            reservationStatusMessage.classList.remove('hidden');
+            reservationStatusMessage.classList.add('error');
+        })
+        .finally(() => {
         });
 }
 
@@ -272,8 +308,8 @@ function createReservation(guest_name, guest_email, place_name, start_date, end_
 
     const url = `${apiUrl}/reservations`;
 
-    loadingEl?.classList?.remove('hidden');
-    emptyEl.classList.add('hidden')
+    formStatusMessage.textContent = "crearando reserva..";
+    formStatusMessage.classList.remove('hidden');
 
     fetch(url, {
         method: "POST",
@@ -292,30 +328,32 @@ function createReservation(guest_name, guest_email, place_name, start_date, end_
     })
         .then(response => {
             if (!response.ok) {
-                errorEl?.classList?.remove('hidden');
-                throw new Error(`HTTP error! Status: ${response.status}`);
+                return response.json().then(errData => {
+                    throw new Error(errData.error || `HTTP error! Status: ${response.status}`);
+                });
             }
             return response.json();
         })
         .then(data => {
             clearCreateReservationForm();
             fetchReservations();
-            loadingEl?.classList?.add('hidden');
+            formStatusMessage.classList.add('hidden');
         })
         .catch(error => {
-            errorEl?.classList?.remove('hidden');
+            formStatusMessage.textContent = error.message;
+            formStatusMessage.classList.remove('hidden');
+            formStatusMessage.classList.add('error');
         })
         .finally(() => {
-            loadingEl?.classList?.add('hidden');
         });
 
 }
 
 function cancelReservation(reserva_id) {
-    const url = `${apiUrl}/reservations`;
 
-    loadingEl?.classList?.remove('hidden');
-    emptyEl.classList.add('hidden')
+    if (confirm("Estas Seguro!") == false) return;
+
+    const url = `${apiUrl}/reservations`;
 
     fetch(url, {
         method: "PATCH",
@@ -329,20 +367,21 @@ function cancelReservation(reserva_id) {
     })
         .then(response => {
             if (!response.ok) {
-                errorEl?.classList?.remove('hidden');
-                throw new Error(`HTTP error! Status: ${response.status}`);
+                return response.json().then(errData => {
+                    throw new Error(errData.error || `HTTP error! Status: ${response.status}`);
+                });
             }
             return response.json();
         })
         .then(data => {
-            fetchReservations();
-            loadingEl?.classList?.add('hidden');
+            if (!reservaId) {
+                fetchReservations();
+            }
         })
         .catch(error => {
-            errorEl?.classList?.remove('hidden');
+            alert(`Error Cancelar Reserva: ${error.message}`);
         })
         .finally(() => {
-            loadingEl?.classList?.add('hidden');
         });
 
 }

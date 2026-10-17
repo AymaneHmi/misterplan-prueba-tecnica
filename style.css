@@ -61,16 +61,20 @@ a {
     display: none !important;
 }
 
-#loading-indicator, #error-indicator, #empty-indicator {
+.status-message {
     padding: 1rem 0;
     font-size: 0.9rem;
     color: var(--text-muted);
     text-align: center;
+    text-transform: capitalize;
 }
 
-#error-indicator {
+.success {
+    color: green;
+}
+
+.error {
     color: var(--danger-color);
-    text-align: left;
 }
 
 button {
@@ -102,7 +106,8 @@ button#cancelReservationFormBtn:hover {
 }
 
 /* Inputs & Forms */
-input, select {
+input,
+select {
     font-family: inherit;
     font-size: 0.9rem;
     padding: 0.5rem 0.75rem;
@@ -113,7 +118,8 @@ input, select {
     transition: border-color 0.2s ease;
 }
 
-input:focus, select:focus {
+input:focus,
+select:focus {
     border-color: var(--accent-color);
 }
 
@@ -147,7 +153,7 @@ input:focus, select:focus {
     border: 1px solid var(--border-color);
 }
 
-#createReservationForm > div {
+#createReservationForm>div {
     display: flex;
     flex-direction: column;
     gap: 0.35rem;
