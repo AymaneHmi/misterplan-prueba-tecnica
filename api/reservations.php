@@ -1,7 +1,7 @@
 <?php
 
-include './controllers/ReservationController.php';
-include './helpers/InputDataHelper.php';
+include __DIR__ . '/controllers/ReservationController.php';
+include __DIR__ . '/helpers/InputDataHelper.php';
 
 $helper = new InputDataHelper();
 $controller = new ReservationController($conn);

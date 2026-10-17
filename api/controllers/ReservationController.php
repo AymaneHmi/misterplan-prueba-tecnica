@@ -1,7 +1,5 @@
 <?php
 
-include './config/db.php';
-
 class ReservationController
 {
 
@@ -16,6 +14,11 @@ class ReservationController
     {
         $query = "SELECT id FROM reservas WHERE id = ? LIMIT 1";
         $stmt = $this->db->prepare($query);
+
+        if (!$stmt) {
+            throw new HttpException('No se pudo preparar la consulta de la reserva', 500);
+        }
+
         $stmt->bind_param("i", $reserva_id);
 
         if (!$stmt->execute()) {
@@ -68,6 +71,10 @@ class ReservationController
 
         $stmt = $this->db->prepare($query);
 
+        if (!$stmt) {
+            throw new HttpException('No se pudo preparar la consulta de la reserva', 500);
+        }
+
         if (count($params) > 0) {
             $stmt->bind_param($types, ...$params);
         }
@@ -95,15 +102,28 @@ class ReservationController
         }
 
         $reserva_query = "SELECT * FROM reservas WHERE id = ?";
+
         $stmt = $this->db->prepare($reserva_query);
+
+        if (!$stmt) {
+            throw new HttpException('No se pudo preparar la consulta de la reserva', 500);
+        }
+
         $stmt->bind_param("i", $reserva_id);
         $stmt->execute();
         $reserva = $stmt->get_result()->fetch_assoc();
         $stmt->close();
 
         $eventos_query = "SELECT * FROM reservas_evento WHERE reserva_id = ? ORDER BY fecha_creacion DESC";
+
         $stmt = $this->db->prepare($eventos_query);
+
+        if (!$stmt) {
+            throw new HttpException('No se pudo preparar la consulta de la reserva', 500);
+        }
+
         $stmt->bind_param("i", $reserva_id);
+
         $stmt->execute();
 
         $result = $stmt->get_result();
@@ -127,6 +147,10 @@ class ReservationController
         $query = "INSERT INTO reservas_evento (reserva_id, tipo, descripcion) VALUES (?, ?, ?)";
         $stmt = $this->db->prepare($query);
 
+        if (!$stmt) {
+            throw new HttpException('No se pudo preparar la consulta de la reserva', 500);
+        }
+
         $stmt->bind_param("iss", $reserva_id, $type, $description);
 
         if (!$stmt->execute()) {
@@ -138,6 +162,10 @@ class ReservationController
     {
         $query = "INSERT INTO reservas (nombre_huesped, email_huesped, nombre_alojamiento, fecha_entrada, fecha_salida, estado, importe, notas) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = $this->db->prepare($query);
+
+        if (!$stmt) {
+            throw new HttpException('No se pudo preparar la consulta de la reserva', 500);
+        }
 
         $estado = 'pendiente';
 
@@ -165,6 +193,10 @@ class ReservationController
 
         $query = "UPDATE reservas SET estado=? WHERE id=?";
         $stmt = $this->db->prepare($query);
+
+        if (!$stmt) {
+            throw new HttpException('No se pudo preparar la consulta de la reserva', 500);
+        }
 
         $stmt->bind_param("si", $estado, $reserva_id);
 

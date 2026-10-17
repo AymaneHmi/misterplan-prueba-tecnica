@@ -1,9 +1,9 @@
 <?php
 
-$server = "127.0.0.1";
-$user = "root";
-$password = "root";
-$db_name = "preuba";
+$server = $_ENV['DB_SERVER'];
+$user = $_ENV['DB_USER'];
+$password = $_ENV['DB_PASSWORD'];
+$db_name = $_ENV['DB_NAME'];
 
 $conn = mysqli_connect($server, $user, $password, $db_name);
 

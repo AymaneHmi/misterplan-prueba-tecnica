@@ -1,0 +1,26 @@
+
+Levantarlo en local:
+
+- Iniciar el MAMP, y crea una base de datos 'preuba', copiar env.example y cambiarle el nombre a .env y introduce el nombre de base de datos. dentro del phpMyAdmin, dentro de base de datos, tocar import, anadir archive, y poner .sql archivo, y tocar Go.
+
+- Para ejecutar el proyecto de forma local, primero realiza un «pull» desde GitHub. 
+`git clone https://github.com/AymaneHmi/misterplan-prueba-tecnica.git`
+
+- Ejecuta `composer install` (si no tiene composer, installar aqui https://getcomposer.org/download/)
+
+
+- Para ejecutar pruebas, utiliza este comando : `./vendor/bin/phpunit api/tests/ReservationControllerTest.php`
+
+Decisiones:
+
+- Elegí crear una carpeta de controladores para tener la lógica de las categorías de la aplicación, en el futuro si tenemos autenticación, usuarios.
+
+- Utilicé una base de datos MySQL porque, en el caso de las reservas, lo mejor es emplear una base de datos relacional; además, ya la había utilizado en muchos de mis proyectos anteriores.
+
+lo que haría de otra manera si tuviera más tiempo:
+
+- Añadiría autenticación, así como roles de usuario y de administrador.
+
+Escalabilidad:
+
+- si este servicio recibiera 1000 reservas/hora, añadiría índices a la base de datos, implementaría caché usando Redis y, si eso no fuera suficiente, crearía réplicas para realizar lecturas desde ellas.
